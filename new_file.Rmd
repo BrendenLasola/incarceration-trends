@@ -1,0 +1,165 @@
+---
+title: "Race and the Prison/Jail System"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(tidyverse)
+library(styler)
+library(maps)
+library(tmap)
+```
+Through the data collected by Vera Institute, I want to see if there is a racial bias towards black people in the
+prison and jail system. 
+
+```{r}
+#Extracting data
+urlfile = "https://raw.githubusercontent.com/vera-institute/incarceration-trends/master/incarceration_trends.csv"
+
+#naming the dataset
+incar_trends <- read_csv(url(urlfile))
+
+#looking at the columns
+ncar_var <- colnames(incar_trends)
+
+#Different regions
+incar_regions <- unique(incar_trends$region)
+
+```
+
+```{r}
+#Max in prison
+max_jail <- incar_trends %>%
+  filter(total_jail_pop == max(total_jail_pop,na.rm=TRUE)) %>%
+  select(state, year, total_jail_pop)
+
+#Max in prison
+max_prison <- incar_trends %>%
+  filter(total_prison_pop == max(total_prison_pop,na.rm = TRUE)) %>%
+  select(state,year, total_prison_pop)
+
+#max prison adm
+max_prison_adm <- incar_trends %>%
+  filter(total_prison_adm == max(total_prison_adm,na.rm = TRUE)) %>%
+  select(state,year,total_prison_adm)
+
+#max jail admission
+max_jail_adm <- incar_trends %>%
+  filter(total_jail_adm == max(total_jail_adm,na.rm = TRUE)) %>%
+  select(state,year,total_jail_adm)
+```
+
+
+```{r}
+#top 5 largest in jail
+largest_pop <- incar_trends %>%
+  filter(year == max(year)) %>%
+  group_by(state) %>% 
+  summarize(total_pop_15to64 = max(total_pop_15to64, na.rm = TRUE)) %>%
+  arrange(desc(total_pop_15to64))
+
+#top 5 largest in jail
+largest_jail <- incar_trends %>%
+  filter(year == '2016') %>%
+  group_by(state) %>% 
+  summarize(total_jail_pop = sum(total_jail_pop, na.rm = TRUE)) %>%
+  arrange(desc(total_jail_pop)) %>%
+  filter(total_jail_pop > 10)
+
+# top 5 largest in prison
+largest_prison <- incar_trends %>%
+  filter(year == '2016') %>%
+  group_by(state) %>% 
+  summarize(total_prison_pop = sum(total_prison_pop, na.rm = TRUE)) %>%
+  arrange(desc(total_prison_pop)) %>%
+  filter(total_prison_pop != 0)
+
+#Los Angeles has the most people in Jail and Prison 
+#Make a box plot for these
+
+```
+
+
+```{r}
+#Jail population categorized by race in each region 
+#The reason I did region instead of states is because there are some states that have no data
+jail_pop <- incar_trends %>%
+  filter(year == '2016') %>%
+  group_by(state) %>%
+  summarize(total_jail_pop = sum(total_jail_pop, na.rm = TRUE),
+            black_jail_pop = sum(black_jail_pop,na.rm = TRUE),
+            white_jail_pop = sum(white_jail_pop, na.rm = TRUE),
+            latinx_jail_pop = sum(latinx_jail_pop, na.rm = TRUE),
+            aapi_jail_pop = sum(aapi_jail_pop,na.rm = TRUE),
+            native_jail_pop = sum(native_jail_pop,na.rm = TRUE),
+            other_race_jail_pop = sum(other_race_jail_pop,na.rm = TRUE)) %>%
+  arrange(desc(total_jail_pop))
+
+#No data at 2018 so I might do 2016, Even the data is not really there in terms of specifi
+prison_pop <- incar_trends %>%
+  filter(year == '2016') %>%
+  group_by(region) %>%
+  summarize(total_prison_pop = sum(total_prison_pop,na.rm = TRUE),
+            black_prison_pop = sum(black_prison_pop,na.rm = TRUE),
+            white_prison_pop = sum(white_prison_pop, na.rm = TRUE),
+            latinx_prison_pop = sum(latinx_prison_pop,na.rm = TRUE),
+            aapi_prison_pop = sum(aapi_prison_pop,na.rm = TRUE),
+            native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
+            other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE))
+#Make a bargraph for this
+```
+
+```{r}
+#Jail over time
+jail_time <- incar_trends %>%
+  group_by(year) %>%
+  filter(year <= '2016' & year >= '1990') %>%
+  summarize(total_jail_pop = sum(total_jail_pop,na.rm=TRUE))
+
+#prison over time
+prison_time <- incar_trends %>%
+  group_by(year) %>%
+  filter(year <= '2016' & year >= '1990') %>%
+  summarize(total_prison_pop = sum(total_prison_pop,na.rm=TRUE))
+
+#black over time
+black_time <- incar_trends %>%
+  filter(year <= '2016' & year >= '1990') %>%
+  group_by(year) %>%
+  summarize(black_prison_pop = sum(black_prison_pop,na.rm=TRUE),
+            black_pop_15t64 = sum(black_pop_15to64,na.rm =TRUE)) 
+#white over time
+white_time <- incar_trends %>%
+ filter(year <= '2016' & year >= '1990') %>%
+  group_by(year) %>%
+  summarize(white_prison_pop = sum(white_prison_pop,na.rm=TRUE),
+            white_pop_15t64 = sum(white_pop_15to64,na.rm =TRUE))
+
+#make a line graph for this and then look at the difference in slope for black vs. white people in jail specifically, is there a difference?
+```
+
+```{r}
+#Convert the decimals to percents and then make a double bargraph for both black and white percent
+jail_percent <- incar_trends %>%
+  filter(year <= '2016' & year >= '1990') %>%
+  group_by(region) %>%
+  summarize(black_percent = sum(black_jail_pop,na.rm=TRUE)/sum(black_pop_15to64,na.rm = TRUE),
+            white_percent = sum(white_jail_pop,na.rm=TRUE)/sum(white_pop_15to64,na.rm = TRUE))
+
+prison_percent <- incar_trends %>% 
+  filter(year <= '2016' & year >= '1990') %>%
+  group_by(region) %>%
+  summarize(black_percent = sum(black_prison_pop,na.rm = TRUE)/sum(black_pop_15to64,na.rm=TRUE),
+            white_percent = sum(white_prison_pop,na.rm = TRUE)/sum(white_pop_15to64,na.rm=TRUE) ) 
+            
+```
+
+
+
+
+
+
