@@ -12,25 +12,36 @@ library(tidyverse)
 library(styler)
 library(maps)
 library(tmap)
+library(knitr)
+library(reshape2)
 ```
+
+Things to do:
+2.) Bar graph for the percentages based on each race and the total population for both jail and prison
+
+
+Problem:
 Through the data collected by Vera Institute, I want to see if there is a racial bias towards black people in the
 prison and jail system. 
+
 
 ```{r}
 #Extracting data
 urlfile = "https://raw.githubusercontent.com/vera-institute/incarceration-trends/master/incarceration_trends.csv"
 
-#naming the dataset
+#Naming the dataset
 incar_trends <- read_csv(url(urlfile))
 
-#looking at the columns
+#Looking at the columns
 incar_var <- colnames(incar_trends)
 
 #Different regions
 incar_regions <- unique(incar_trends$region)
 ```
 
-
+Basic Look at the data set,
+incar_pop looks at the change over time on the increase of the US population
+and incar_jnp looks specifically at prisons and jails. 
 ```{r}
 #Looking at the amount of people that are ages 15 to 64 from 1970 to 2010
 incar_pop <- incar_trends %>%
@@ -38,16 +49,30 @@ incar_pop <- incar_trends %>%
   summarize(total_pop_15to64 = sum(total_pop_15to64)) %>%
   filter(year >= '1990' & year <= '2010')
 
+#Graph of incar_pop
+pop_line <- ggplot(incar_pop, aes(year, total_pop_15to64)) + geom_line(color = 'darkgreen', size = 1.5) + labs(x = 'Year', y = 'Total Pop') + ggtitle ('Total population
+from ages 15 to 64 over time')
+
+
 #Looking at the amount of people in prison and jail from 1970 to 2010
 incar_jnp <- incar_trends %>%
   group_by(year) %>%
   summarize(total_jail_pop = sum(total_jail_pop,na.rm=TRUE), 
             total_prison_pop = sum(total_prison_pop,na.rm=TRUE)) %>%
   filter(year >= '1990' & year <= '2010')
+
+#Graph of incar_jnp
+jnp_lines <- ggplot(incar_jnp) + 
+  geom_line(aes(x = year, y = total_jail_pop), size = 1.5, color = 'darkred') +
+  geom_line(aes(x = year, y = total_prison_pop), size = 1.5, color = 'darkblue') +
+  ylab('Total Pop') +
+  xlab('Year') +
+  ggtitle('Total pop in Jail (Red)  vs. Prison (Blue) from years 1990 to 2010') 
 ```
 
 
-Time 
+Looking at the difference for each race over time, have they increased or decreased?
+Doing this for each race and for jail/prison
 ```{r}
 #Race over time in Jail
 incar_jail_race <- incar_trends %>%
@@ -60,7 +85,18 @@ incar_jail_race <- incar_trends %>%
             native_jail_pop = sum(native_jail_pop,na.rm = TRUE),
             other_race_jail_pop = sum(other_race_jail_pop,na.rm = TRUE))
 
-#Prison over time in Jail
+#Graph of incar_jail_race
+jail_line <-  ggplot(data = incar_jail_race, aes(x = year)) +
+  geom_line(aes(y = black_jail_pop, colour = 'black_jail_pop')) +
+  geom_line(aes(y = white_jail_pop, colour = 'white_jail_pop')) +
+  geom_line(aes(y = latinx_jail_pop, colour = 'latinx_jail_pop')) +
+  xlab('Years') +
+  scale_colour_manual('',  
+                      breaks = c('black_jail_pop','white_jail_pop','latinx_jail_pop'),
+                      values = c('red','green','blue')) +
+  scale_y_continuous('Total in Jail') +
+  labs(title = 'Race in Jail overtime')
+
 incar_prison_race <- incar_trends %>%
   filter(year >= '1983' & year <= '2016') %>%
   group_by(year) %>%
@@ -71,50 +107,63 @@ incar_prison_race <- incar_trends %>%
             native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
             other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE))
 
-#Overall how many of each race are in prison for the most recent year
-race_prison <- incar_trends %>%
-  summarize(total_prison_pop = sum(total_prison_pop,na.rm = TRUE), 
-            black_prison_pop = sum(black_prison_pop,na.rm = TRUE),
-            white_prison_pop = sum(white_prison_pop, na.rm = TRUE),
-            latinx_prison_pop = sum(latinx_prison_pop,na.rm = TRUE),
-            aapi_prison_pop = sum(aapi_prison_pop,na.rm = TRUE),
-            native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
-            other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE))
+#Graph of incar_prison_race
+prison_line <- ggplot(data = incar_prison_race, aes(x = year)) +
+  geom_line(aes(y = black_prison_pop, colour = 'black_prison_pop')) +
+  geom_line(aes(y = white_prison_pop, colour = 'white_prison_pop')) +
+  geom_line(aes(y = latinx_prison_pop, colour = 'latinx_prison_pop')) +
+  xlab('Years') + 
+  scale_colour_manual('',  
+                      breaks = c('black_prison_pop','white_prison_pop','latinx_prison_pop'),
+                      values = c('red','green','blue')) +
+  scale_y_continuous('Total in Prison') +
+  labs(title = 'Race in prison overtime')
 
-#Overall how many of each race are in jail for the most recent year
-race_jail <- incar_trends %>%
-  filter(year == 2016)%>%
-  summarize(total_jail_pop = sum(total_jail_pop,na.rm = TRUE), 
-            black_jail_pop = sum(black_jail_pop,na.rm = TRUE),
-            white_jail_pop = sum(white_jail_pop, na.rm = TRUE),
-            latinx_jail_pop = sum(latinx_jail_pop, na.rm = TRUE),
-            aapi_jail_pop = sum(aapi_jail_pop,na.rm = TRUE),
-            native_jail_pop = sum(native_jail_pop,na.rm = TRUE),
-            other_race_jail_pop = sum(other_race_jail_pop,na.rm = TRUE))
+#  geom_line(aes(x = year, y = white_prison_pop), size = 1, color = 'green') +
+#  xlab('Years') +
+#  ylab('Total in Prison') +
+# ggTitle('Change over time for black(c) and white people in Prison')
+
 ```
 
 Percentages
 ```{r}
-#Convert the decimals to percents and then make a double bargraph for both black and white percent
+#Percent of each race in jail for the year 2016
 jail_percent <- incar_trends %>%
-  filter(year <= '2016' & year >= '1990') %>%
-  group_by(year) %>%
+  filter(year == '2016' ) %>% 
+  group_by(region) %>%
   summarize(black_percent = sum(black_jail_pop,na.rm=TRUE)/sum(black_pop_15to64,na.rm = TRUE),
             white_percent = sum(white_jail_pop,na.rm=TRUE)/sum(white_pop_15to64,na.rm = TRUE),
             latinx_percent = sum(latinx_jail_pop,na.rm=TRUE)/sum(latinx_pop_15to64,na.rm = TRUE), 
             aapi_percent = sum(aapi_jail_pop,na.rm=TRUE)/sum(aapi_pop_15to64,na.rm=TRUE),
-            native_percent = sum(native_jail_pop,na.rm=TRUE)/sum(native_pop_15to64,na.rm=TRUE))
+            native_percent = sum(native_jail_pop,na.rm=TRUE)/sum(native_pop_15to64,na.rm=TRUE)) 
+jail_percent <- melt(jail_percent)
 
+#Graph of jail_percent
+jail_bar <-ggplot(jail_percent, aes(x=variable, y=value, fill=variable)) +
+  geom_bar(stat='identity', position='dodge') + 
+  scale_y_continuous('Percent',labels=scales::percent) + 
+  xlab('Race') + 
+  ylab('Percent') + 
+  labs(fill='Race Percent', title = 'Percent of the total pop of 15to64 for each race that are in Jail')
+
+#Percent of each race in prison for the year 2016
 prison_percent <- incar_trends %>% 
-  filter(year <= '2016' & year >= '1990') %>%
-  group_by(year) %>%
-  summarize(black_percent = sum(black_prison_pop,na.rm = TRUE)/sum(black_pop_15to64,na.rm=TRUE),
-            white_percent = sum(white_prison_pop,na.rm = TRUE)/sum(white_pop_15to64,na.rm=TRUE),
-            latinx_percent = sum(white_prison_pop,na.rm = TRUE)/sum(latinx_pop_15to64,na.rm=TRUE),
-            aapi_percent = sum(aapi_prison_pop,na.rm = TRUE)/sum(aapi_pop_15to64,na.rm=TRUE),
-            native_percent = sum(native_prison_pop,na.rm= TRUE)/sum(native_pop_15to64,na.rm=TRUE))
-            
-            
+  filter(year == '2016' ) %>%
+  summarize(black_percent =   sum(black_prison_pop,na.rm  = TRUE)/sum(black_pop_15to64,na.rm=TRUE),
+            white_percent =  sum(white_prison_pop,na.rm  = TRUE)/sum(white_pop_15to64,na.rm=TRUE),
+            latinx_percent =  sum(white_prison_pop,na.rm  = TRUE)/sum(latinx_pop_15to64,na.rm=TRUE),
+            aapi_percent =  sum(aapi_prison_pop,na.rm   = TRUE)/sum(aapi_pop_15to64,na.rm=TRUE),
+            native_percent = sum(native_prison_pop,na.rm = TRUE)/sum(native_pop_15to64,na.rm=TRUE))
+prison_percent <- melt(prison_percent)
+
+prison_bar <- ggplot(prison_percent,aes(x = variable, y = value, fill = variable)) + 
+  geom_bar(stat = 'identity', position = 'dodge') + 
+  scale_y_continuous(labels=scales::percent) +
+  xlab('Race') +
+  ylab('Percent') +
+  labs(fill = 'Race Percent', title = 'Percent of the total pop of 15to64 for each race that are in Prison')
+
 ```
 
 Urbanicity
@@ -128,7 +177,16 @@ Suburban = anything within the surrounding metropolitan area
 urban_type <- unique(incar_trends$urbanicity)
 #small/mid,rural,suburban, urban, and NA
 
-#categorizes the pop in jail by urbanicity for the most recent year w/ data
+#Looking at the data, for only 2016. The reason for 2016 is because that is the latest date with the most amount
+#of data
+incar_2016 <- incar_trends %>%
+  filter(year == '2016') 
+
+#Table
+urban_count <- table(incar_2016$urbanicity)
+urban_table <- kable(urban_count,caption = 'Count of Urbanicity')
+
+#Categorizes the pop in jail by urbanicity for the most recent year w/ data
 urban_jail <- incar_trends %>%
   group_by(urbanicity) %>%
   filter(urbanicity != 'NA') %>%
@@ -140,7 +198,18 @@ urban_jail <- incar_trends %>%
             native_jail_pop = sum(native_jail_pop,na.rm = TRUE),
             other_race_jail_pop = sum(other_race_jail_pop,na.rm = TRUE))
 
-#categorizes the pop in prison by urbanicity for the most recent year w/ data
+#Melted Urban Jail
+urban_jail <- melt(urban_jail)
+
+#Urban Jail Graphs
+jail_graph <- ggplot(urban_jail,aes(x = urbanicity, y = value)) +
+  geom_bar(aes(fill = variable), stat = 'identity', position = 'dodge') +
+  scale_y_continuous('Jail Pop') + 
+  xlab('Urbanicity') + 
+  ylab('Percent') + 
+  labs(fill='Race Pop',title = 'Total Pop in Jail for each Urbanicity')
+
+#Categorizes the pop in prison by urbanicity for the most recent year w/ data
 urban_prison <- incar_trends %>%
   group_by(urbanicity) %>%
   filter(urbanicity != 'NA') %>%
@@ -152,52 +221,34 @@ urban_prison <- incar_trends %>%
             native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
             other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE)) 
 
+#Melted Urban Prison
+urban_prison <- melt(urban_prison)
+
+#Graph of Urban Prison
+prison_graph <- ggplot(urban_prison,aes(x = urbanicity, y = value)) +
+  geom_bar(aes(fill = variable), stat = 'identity', position = 'dodge') +
+  scale_y_continuous('Prison Pop') + 
+  xlab('Urbanicity') + 
+  ylab('Percent') + 
+  labs(fill='Race Pop',title = 'Total Pop in Prison for each Urbanicity')
+
+
+#Looking at the total amount of people for each urbanicity
 urban_year <- incar_trends %>%
   group_by(urbanicity) %>%
   filter(year == '2016' & urbanicity != 'NA') %>%
   summarize(total_pop_15to64 = sum(total_pop_15to64,na.rm=TRUE)) %>%
   arrange(desc(total_pop_15to64))
 
-urban_black <- incar_trends %>%
-  filter(urbanicity == urbanicity & urbanicity != 'NA' ) %>%
-  filter(year == '2016') %>%
-  summarize(black_pop = sum(black_pop,na.rm = TRUE),
-            white_pop = sum(white_pop, na.rm = TRUE),
-            latinx_pop = sum(latinx_pop,na.rm = TRUE),
-            aapi_pop = sum(aapi_pop,na.rm = TRUE),
-            native_pop = sum(native_pop,na.rm = TRUE), 
-            other_prison_pop = sum(other_race_pop,na.rm = TRUE)) 
-  
-  
-```
-
-
-
-
-Graphs
-```{r}
-jail_line <- ggplot(incar_jail_race) +
-  geom_line(aes(x = year, y = black_jail_pop), size = 1.5, color = 'black') + 
-  geom_line(aes(x = year, y = white_jail_pop), size = 1.5, color = 'green')
-
-#graph of black and white people o
-prison_line <- ggplot(incar_prison_race) +
-  geom_line(aes(x = year, y = black_prison_pop), size = 1.5, color = 'black') + 
-  geom_line(aes(x = year, y = white_prison_pop), size = 1.5, color = 'green')
-
-#line graph of the amount of people that
-pop_line <- ggplot(incar_pop, aes(year, total_pop_15to64)) + geom_line(color = 'darkgreen', size = 1.5) + labs(x = 'Year', y = 'Total Pop') + ggtitle ('Total population
-from ages 15 to 64 over time')
-
-#line graph showing the amount of people changing from both jail and prison 
-jnp_lines <- ggplot(incar_jnp) + 
-  geom_line(aes(x = year, y = total_jail_pop), size = 1.5, color = 'darkred') +
-  geom_line(aes(x = year, y = total_prison_pop), size = 1.5, color = 'darkblue') +
+total_graph <- ggplot(urban_year, aes(x = urbanicity,y = total_pop_15to64)) +
+  geom_bar(stat = 'identity', fill = 'black') + 
+  xlab('Urbanicity') + 
   ylab('Total Pop') +
-  xlab('Year') +
-  ggtitle('Total pop in Jail (Red)  vs. Prison (Blue) from years 1990 to 2010') 
+  labs(title = 'Total Population for each Urbanicity')
 ```
 
+So what we have hear is, how many people in each race is in jail for each urbanicity and same thing with prison.
+The last thing I have is how many people are in each urbanicity) 
 
 
 
