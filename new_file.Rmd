@@ -69,7 +69,7 @@ jnp_lines <- ggplot(incar_jnp) +
   xlab('Year') +
   ggtitle('Total pop in Jail (Red)  vs. Prison (Blue) from years 1990 to 2010') 
 ```
-
+There has been a sharp increase in terms of total population that can go to jail in the US. The prison and jail population also have an increase but for the most part there are way more people going to prison. At the start of the data, there are way more people in prison compared to jail but the increase for prison is sharper compared to jail and the jail population has occasional dips. 
 
 Looking at the difference for each race over time, have they increased or decreased?
 Doing this for each race and for jail/prison
@@ -118,13 +118,9 @@ prison_line <- ggplot(data = incar_prison_race, aes(x = year)) +
                       values = c('red','green','blue')) +
   scale_y_continuous('Total in Prison') +
   labs(title = 'Race in prison overtime')
-
-#  geom_line(aes(x = year, y = white_prison_pop), size = 1, color = 'green') +
-#  xlab('Years') +
-#  ylab('Total in Prison') +
-# ggTitle('Change over time for black(c) and white people in Prison')
-
 ```
+For prison vs. jail in terms of race, there has consistently been more black people going to prison compared to white people and is mostly opposite for the jail population. One thing to take note is that the black and jail population in prison and jail are fairly close, especially comparing to latinx, but there are way more white people than black people in the US. 
+
 
 Percentages
 ```{r}
@@ -165,6 +161,7 @@ prison_bar <- ggplot(prison_percent,aes(x = variable, y = value, fill = variable
   labs(fill = 'Race Percent', title = 'Percent of the total pop of 15to64 for each race that are in Prison')
 
 ```
+Looking at the percentages it shows that there is a higher percentage of the black population going to prison and jail compared to white people. For prison, white people rank third in terms of the percentage of there race that are jail. 
 
 Urbanicity
 There are four categories for urbanicty
