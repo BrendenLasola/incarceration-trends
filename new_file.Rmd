@@ -16,10 +16,6 @@ library(knitr)
 library(reshape2)
 ```
 
-Things to do:
-2.) Bar graph for the percentages based on each race and the total population for both jail and prison
-
-
 Problem:
 Through the data collected by Vera Institute, I want to see if there is a racial bias towards black people in the
 prison and jail system. 
@@ -39,6 +35,7 @@ incar_var <- colnames(incar_trends)
 incar_regions <- unique(incar_trends$region)
 ```
 
+
 Basic Look at the data set,
 incar_pop looks at the change over time on the increase of the US population
 and incar_jnp looks specifically at prisons and jails. 
@@ -52,9 +49,9 @@ incar_pop <- incar_trends %>%
 #Graph of incar_pop
 pop_line <- ggplot(incar_pop, aes(year, total_pop_15to64)) + geom_line(color = 'darkgreen', size = 1.5) + labs(x = 'Year', y = 'Total Pop') + ggtitle ('Total population
 from ages 15 to 64 over time')
+pop_line
 
-
-#Looking at the amount of people in prison and jail from 1970 to 2010
+#Looking at the amount of people in prison and jail from 1990 to 2010
 incar_jnp <- incar_trends %>%
   group_by(year) %>%
   summarize(total_jail_pop = sum(total_jail_pop,na.rm=TRUE), 
@@ -68,11 +65,14 @@ jnp_lines <- ggplot(incar_jnp) +
   ylab('Total Pop') +
   xlab('Year') +
   ggtitle('Total pop in Jail (Red)  vs. Prison (Blue) from years 1990 to 2010') 
+jnp_lines
 ```
+
+
 There has been a sharp increase in terms of total population that can go to jail in the US. The prison and jail population also have an increase but for the most part there are way more people going to prison. At the start of the data, there are way more people in prison compared to jail but the increase for prison is sharper compared to jail and the jail population has occasional dips. 
 
-Looking at the difference for each race over time, have they increased or decreased?
-Doing this for each race and for jail/prison
+
+
 ```{r}
 #Race over time in Jail
 incar_jail_race <- incar_trends %>%
@@ -96,16 +96,16 @@ jail_line <-  ggplot(data = incar_jail_race, aes(x = year)) +
                       values = c('red','green','blue')) +
   scale_y_continuous('Total in Jail') +
   labs(title = 'Race in Jail overtime')
+jail_line
 
+
+#race over time in prison
 incar_prison_race <- incar_trends %>%
   filter(year >= '1983' & year <= '2016') %>%
   group_by(year) %>%
   summarize(black_prison_pop = sum(black_prison_pop,na.rm = TRUE),
             white_prison_pop = sum(white_prison_pop, na.rm = TRUE),
-            latinx_prison_pop = sum(latinx_prison_pop,na.rm = TRUE),
-            aapi_prison_pop = sum(aapi_prison_pop,na.rm = TRUE),
-            native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
-            other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE))
+            latinx_prison_pop = sum(latinx_prison_pop,na.rm = TRUE))
 
 #Graph of incar_prison_race
 prison_line <- ggplot(data = incar_prison_race, aes(x = year)) +
@@ -118,11 +118,12 @@ prison_line <- ggplot(data = incar_prison_race, aes(x = year)) +
                       values = c('red','green','blue')) +
   scale_y_continuous('Total in Prison') +
   labs(title = 'Race in prison overtime')
+prison_line
 ```
+
+
 For prison vs. jail in terms of race, there has consistently been more black people going to prison compared to white people and is mostly opposite for the jail population. One thing to take note is that the black and jail population in prison and jail are fairly close, especially comparing to latinx, but there are way more white people than black people in the US. 
 
-
-Percentages
 ```{r}
 #Percent of each race in jail for the year 2016
 jail_percent <- incar_trends %>%
@@ -142,6 +143,7 @@ jail_bar <-ggplot(jail_percent, aes(x=variable, y=value, fill=variable)) +
   xlab('Race') + 
   ylab('Percent') + 
   labs(fill='Race Percent', title = 'Percent of the total pop of 15to64 for each race that are in Jail')
+jail_bar
 
 #Percent of each race in prison for the year 2016
 prison_percent <- incar_trends %>% 
@@ -159,90 +161,11 @@ prison_bar <- ggplot(prison_percent,aes(x = variable, y = value, fill = variable
   xlab('Race') +
   ylab('Percent') +
   labs(fill = 'Race Percent', title = 'Percent of the total pop of 15to64 for each race that are in Prison')
-
+prison_bar
 ```
+
+
 Looking at the percentages it shows that there is a higher percentage of the black population going to prison and jail compared to white people. For prison, white people rank third in terms of the percentage of there race that are jail. 
-
-Urbanicity
-There are four categories for urbanicty
-small/mid = small/mid metro combines small metropolitan areas and Micropolitans (area with at least 10,000 but less than 50,000) 
-rural = non core areas
-Urban = core counties of a metropolitan area with a million or more people
-Suburban = anything within the surrounding metropolitan area
-
-```{r}
-urban_type <- unique(incar_trends$urbanicity)
-#small/mid,rural,suburban, urban, and NA
-
-#Looking at the data, for only 2016. The reason for 2016 is because that is the latest date with the most amount
-#of data
-incar_2016 <- incar_trends %>%
-  filter(year == '2016') 
-
-#Table
-urban_count <- table(incar_2016$urbanicity)
-urban_table <- kable(urban_count,caption = 'Count of Urbanicity')
-
-#Categorizes the pop in jail by urbanicity for the most recent year w/ data
-urban_jail <- incar_trends %>%
-  group_by(urbanicity) %>%
-  filter(urbanicity != 'NA') %>%
-  filter(year == '2016') %>%
-  summarize(black_jail_pop = sum(black_jail_pop,na.rm = TRUE),
-            white_jail_pop = sum(white_jail_pop, na.rm = TRUE),
-            latinx_jail_pop = sum(latinx_jail_pop, na.rm = TRUE),
-            aapi_jail_pop = sum(aapi_jail_pop,na.rm = TRUE),
-            native_jail_pop = sum(native_jail_pop,na.rm = TRUE),
-            other_race_jail_pop = sum(other_race_jail_pop,na.rm = TRUE))
-
-#Melted Urban Jail
-urban_jail <- melt(urban_jail)
-
-#Urban Jail Graphs
-jail_graph <- ggplot(urban_jail,aes(x = urbanicity, y = value)) +
-  geom_bar(aes(fill = variable), stat = 'identity', position = 'dodge') +
-  scale_y_continuous('Jail Pop') + 
-  xlab('Urbanicity') + 
-  ylab('Percent') + 
-  labs(fill='Race Pop',title = 'Total Pop in Jail for each Urbanicity')
-
-#Categorizes the pop in prison by urbanicity for the most recent year w/ data
-urban_prison <- incar_trends %>%
-  group_by(urbanicity) %>%
-  filter(urbanicity != 'NA') %>%
-  filter(year == '2016') %>%
-  summarize( black_prison_pop = sum(black_prison_pop,na.rm = TRUE),
-            white_prison_pop = sum(white_prison_pop, na.rm = TRUE),
-            latinx_prison_pop = sum(latinx_prison_pop,na.rm = TRUE),
-            aapi_prison_pop = sum(aapi_prison_pop,na.rm = TRUE),
-            native_prison_pop = sum(native_prison_pop,na.rm = TRUE), 
-            other_race_prison_pop = sum(other_race_prison_pop,na.rm = TRUE)) 
-
-#Melted Urban Prison
-urban_prison <- melt(urban_prison)
-
-#Graph of Urban Prison
-prison_graph <- ggplot(urban_prison,aes(x = urbanicity, y = value)) +
-  geom_bar(aes(fill = variable), stat = 'identity', position = 'dodge') +
-  scale_y_continuous('Prison Pop') + 
-  xlab('Urbanicity') + 
-  ylab('Percent') + 
-  labs(fill='Race Pop',title = 'Total Pop in Prison for each Urbanicity')
-
-
-#Looking at the total amount of people for each urbanicity
-urban_year <- incar_trends %>%
-  group_by(urbanicity) %>%
-  filter(year == '2016' & urbanicity != 'NA') %>%
-  summarize(total_pop_15to64 = sum(total_pop_15to64,na.rm=TRUE)) %>%
-  arrange(desc(total_pop_15to64))
-
-total_graph <- ggplot(urban_year, aes(x = urbanicity,y = total_pop_15to64)) +
-  geom_bar(stat = 'identity', fill = 'black') + 
-  xlab('Urbanicity') + 
-  ylab('Total Pop') +
-  labs(title = 'Total Population for each Urbanicity')
-```
 
 
 
