@@ -1,11 +1,7 @@
 # incarceration-trends
 ## Overview
-One of the sharpest manifestations of racism in the United States is its prison system. A complex set of social and political structures, including the over-policing (Links to an external site.) of individuals of color and the war on drugs (Links to an external site.) have led to the disproportionate incarceration of people of color. These issues are very well summarized in the documentary 13th, which you can watch for free (Links to an external site.).
 
-In this assignment, you will use your data analysis and visualization skills to expose patterns of inequality using incarceration data collected by the Vera Institute (Links to an external site.). In doing so, you will:
+Overall goal of this project is to get better at doing EDA in R specifically. This dataset is about the incarceration rates/trends in the US. The main problem that I had with this data set was the fact that even though population data is preset going all the way back to 1970 there were missing data for that time period. To deal with missing values, I constricted the dataset to time periods where there was enough data. I am mainly looking at how this trends go over time, so missing certain periods isn't that big of a deal. The goal was to specifically see if there was a bias towards black people in incaraceration compared to white people. Some other races were missing a lot of values, even though it would have been nice to include other races, there were some instances were it wasn't possible. 
 
-Work with a real world, messy dataset
-Choose your own direction for analysis, including which variables to analyze and compare
-Design and build compelling visualizations to expose particular patterns in the data
-Create a website (using RMarkdown) to share your results
-This assignment is more open-ended than previous ones -- you will be tasked with understanding the data itself, choosing the variables you want to analyze, and deciding the optimal way to write your code. 
+My overall reflections from this project is that I really leveled up my skills with dplyr specifically and ggplot 2. I do see more room for growth with GGplot in terms of creating better graphs. 
+
