@@ -244,8 +244,7 @@ total_graph <- ggplot(urban_year, aes(x = urbanicity,y = total_pop_15to64)) +
   labs(title = 'Total Population for each Urbanicity')
 ```
 
-So what we have hear is, how many people in each race is in jail for each urbanicity and same thing with prison.
-The last thing I have is how many people are in each urbanicity) 
+
 
 
 
