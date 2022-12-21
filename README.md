@@ -1,10 +1,10 @@
 # incarceration-trends
-## Overview
-
-https://rpubs.com/yunghiro/955207
+## Overview!
 
 
-Overall goal of this project is to get better at doing EDA in R specifically. This dataset is about the incarceration rates/trends in the US. The main problem that I had with this data set was the fact that even though population data is preset going all the way back to 1970 there were missing data for that time period. To deal with missing values, I constricted the dataset to time periods where there was enough data. I am mainly looking at how this trends go over time, so missing certain periods isn't that big of a deal. The goal was to specifically see if there was a bias towards black people in incaraceration compared to white people. Some other races were missing a lot of values, even though it would have been nice to include other races, there were some instances were it wasn't possible. 
-
-My overall reflections from this project is that I really leveled up my skills with dplyr specifically and ggplot 2. I do see more room for growth with GGplot in terms of creating better graphs. 
-
+[jail_bar](https://user-images.githubusercontent.com/77668770/208792434-15a6084e-b7e3-4c56-a3f8-ffd2934154d2.png)
+![pop_line](https://user-images.githubusercontent.com/77668770/208792628-415fbf8a-3a9e-4c36-9f5a-83f1e67bceb8.png)
+![prison_line](https://user-images.githubusercontent.com/77668770/208792631-fb47c997-f37e-48c7-a5b2-f838ac3cd550.png)
+![jnp_line](https://user-images.githubusercontent.com/77668770/208792632-49429a3e-9dba-4749-a226-644eea2f9e8d.png)
+![jail_line](https://user-images.githubusercontent.com/77668770/208792633-a5feb2d4-59bd-4c14-a80a-8873dfc51aa1.png)
+![prison_bar](https://user-images.githubusercontent.com/77668770/208792677-fb18dd86-6cd3-447b-9489-5f15e078dd6d.png)
